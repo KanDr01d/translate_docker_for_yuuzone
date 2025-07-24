@@ -3,13 +3,8 @@ FROM libretranslate/libretranslate:latest
 # Switch to root user for installation
 USER root
 
-# Install dependencies for Japanese
+# Ensure package lists are clean (optional, but helps avoid apt issues)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3-pip && \
-    pip3 install --no-cache-dir argos-translate && \
-    argospm update && \
-    argospm install translate-ja_en && \
-    argospm install translate-en_ja && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -22,6 +17,7 @@ EXPOSE 5000
 # Set environment variables
 ENV LT_PORT=5000
 ENV LT_HOST=0.0.0.0
+ENV LT_LOAD_ONLY=en,ja
 
 # Start LibreTranslate
-CMD ["python3", "-m", "libretranslate", "--host", "$LT_HOST", "--port", "$LT_PORT"]
+CMD ["python3", "-m", "libretranslate", "--host", "$LT_HOST", "--port", "$LT_PORT", "--load-only", "en,ja"]
