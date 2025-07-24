@@ -1,38 +1,57 @@
-# Use the official Python image as a base
-FROM python:3.9-slim
+# Using Debian slim base image for stability
+FROM debian:bookworm-slim
 
-# Set environment variables
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
-# Focus on English, Japanese, Vietnamese
-ENV LT_LOAD_ONLY=en,ja,vi
-ENV LT_THREADS=4
-ENV LT_HOST=0.0.0.0
-ENV LT_PORT=5000
+# Environment variables
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    LT_LOAD_ONLY=en,ja,vi \
+    LT_THREADS=4 \
+    LT_HOST=0.0.0.0 \
+    LT_PORT=5000 \
+    # Optimize for our three target languages
+    ARGOS_MODELS="opus-mt-en-ja opus-mt-ja-en opus-mt-en-vi opus-mt-vi-en" \
+    UPDATE_INTERVAL=86400
 
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
     git \
     cmake \
+    pkg-config \
     build-essential \
+    wget \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create and set working directory
-WORKDIR /app
+# Create virtual environment
+RUN python3 -m venv /venv
+ENV PATH="/venv/bin:$PATH"
 
-# Install LibreTranslate
-RUN pip install --no-cache-dir libretranslate
+# Install LibreTranslate with pinned version
+RUN pip install --no-cache-dir libretranslate==1.3.12
 
-# Download language models (English, Japanese, Vietnamese)
-RUN libretranslate --load-only en,ja,vi --download-models
+# Install required language models
+RUN libretranslate --update-models --load-only en,ja,vi
 
-# Expose the API port
-EXPOSE 5000
+# Create runtime directory
+RUN mkdir -p /app/models && chmod 777 /app /app/models
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/languages || exit 1
+    CMD curl -f http://0.0.0.0:5000/languages || exit 1
 
-# Run LibreTranslate
-CMD ["libretranslate", "--host", "0.0.0.0", "--port", "5000", "--load-only", "en,ja,vi"]
+# Expose API port
+EXPOSE 5000
+
+# Runtime configuration
+CMD ["libretranslate", \
+     "--host", "0.0.0.0", \
+     "--port", "5000", \
+     "--load-only", "en,ja,vi", \
+     "--update-models", \
+     "--threads", "4", \
+     "--metrics"]
