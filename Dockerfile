@@ -1,23 +1,25 @@
-FROM libretranslate/libretranslate:latest
+FROM python:3.10-slim
 
-# Switch to root user for installation
-USER root
-
-# Ensure package lists are clean (optional, but helps avoid apt issues)
+# Install system dependencies
 RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Switch back to default non-root user
-USER libretranslate
+# Set working directory
+WORKDIR /app
+
+# Install LibreTranslate
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir libretranslate==1.6.1
 
 # Expose port for Render
 EXPOSE 5000
 
 # Set environment variables
-ENV LT_PORT=5000
-ENV LT_HOST=0.0.0.0
-ENV LT_LOAD_ONLY=en,ja
+ENV PORT=5000
+ENV HOST=0.0.0.0
+ENV LOAD_ONLY=en,ja
 
-# Start LibreTranslate
-CMD ["python3 -m libretranslate --host 0.0.0.0 --port 5000 --load-only en,ja"]
+# Run LibreTranslate
+CMD ["/usr/local/bin/python3", "-m", "libretranslate", "--host", "$HOST", "--port", "$PORT", "--load-only", "$LOAD_ONLY"]
