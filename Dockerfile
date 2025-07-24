@@ -23,8 +23,8 @@ ENV PATH="/venv/bin:$PATH"
 # Install LibreTranslate and its dependencies in the virtual environment
 RUN pip install --no-cache-dir \
     libretranslate==1.3.12 \
-    sentencepiece==0.1.99 \
-    pybind11==2.11.1
+    sentencepiece \
+    pybind11
 
 # Create runtime directory
 RUN mkdir -p /app/models && chmod 777 /app /app/models
