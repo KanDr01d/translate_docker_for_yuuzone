@@ -20,4 +20,4 @@ ENV HOST=0.0.0.0
 ENV LOAD_ONLY=en,ja
 
 # Start LibreTranslate
-CMD ["python3", "-m", "libretranslate", "--host", "$LT_HOST", "--port", "$LT_PORT", "--load-only", "en,ja"]
+CMD ["python3", "-m", "libretranslate", "--host", "$HOST", "--port", "$PORT", "--load-only", "en,ja"]
