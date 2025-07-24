@@ -7,7 +7,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
     LT_HOST=0.0.0.0 \
-    LT_PORT=5000
+    LT_PORT=5000 \
+    SPACY_MODEL=en_core_web_sm,vi_core_news_lg
 
 # Install system dependencies
 RUN apt-get update && \
@@ -20,14 +21,21 @@ RUN apt-get update && \
 RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
-# Install LibreTranslate and its dependencies in the virtual environment
+# Install Python dependencies
 RUN pip install --no-cache-dir \
     libretranslate==1.3.12 \
     sentencepiece \
-    pybind11
+    pybind11 \
+    spacy \
+    spacy-stanza
 
-# Create runtime directory
-RUN mkdir -p /app/models && chmod 777 /app /app/models
+# Download spaCy models for English and Vietnamese
+RUN python -m spacy download en_core_web_sm && \
+    python -m spacy download vi_core_news_lg
+
+# Configure LibreTranslate to use spaCy for Vietnamese
+RUN mkdir -p /app/models && \
+    echo "VIETNAMESE_SBD_MODEL=spacy" > /app/models/vietnamese.cfg
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
@@ -36,10 +44,10 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
 # Expose API port
 EXPOSE 5000
 
-# Run LibreTranslate
+# Run LibreTranslate with spaCy integration
 CMD ["libretranslate", \
     "--host", "0.0.0.0", \
     "--port", "5000", \
     "--load-only", "en,ja,vi", \
-    "--threads", "4", \
+    "--threads", "2", \
     "--metrics"]
