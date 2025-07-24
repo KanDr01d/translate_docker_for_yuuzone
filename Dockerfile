@@ -15,9 +15,9 @@ USER libretranslate
 EXPOSE 5000
 
 # Set environment variables
-ENV LT_PORT=5000
-ENV LT_HOST=0.0.0.0
-ENV LT_LOAD_ONLY=en,ja
+ENV PORT=5000
+ENV HOST=0.0.0.0
+ENV LOAD_ONLY=en,ja
 
 # Start LibreTranslate
 CMD ["python3", "-m", "libretranslate", "--host", "$LT_HOST", "--port", "$LT_PORT", "--load-only", "en,ja"]
