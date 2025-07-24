@@ -33,14 +33,11 @@ RUN pip install --no-cache-dir \
 RUN python -m spacy download en_core_web_sm && \
     python -m spacy download vi_core_news_lg
 
-# Check installed packages
-RUN pip list
-
 # Configure LibreTranslate to use spaCy for Vietnamese
 RUN mkdir -p /app/models && \
     echo "VIETNAMESE_SBD_MODEL=spacy" > /app/models/vietnamese.cfg
 
-# Health check
+# Health check (using 0.0.0.0 instead of localhost)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
     CMD curl -f http://0.0.0.0:5000/languages || exit 1
 
@@ -49,7 +46,7 @@ EXPOSE 5000
 
 # Run LibreTranslate with spaCy integration
 CMD ["libretranslate", \
-    "--host", "0.0.0.0", \  # Binding to all interfaces
+    "--host", "0.0.0.0", \
     "--port", "5000", \
     "--load-only", "en,ja,vi", \
     "--threads", "2", \
