@@ -1,5 +1,8 @@
 FROM libretranslate/libretranslate:latest
 
+# Switch to root user for installation
+USER root
+
 # Install dependencies for Japanese and Vietnamese
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3-pip && \
@@ -11,6 +14,9 @@ RUN apt-get update && \
     argospm install translate-en_vi && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Switch back to default non-root user
+USER libretranslate
 
 # Expose port for Render
 EXPOSE 5000
