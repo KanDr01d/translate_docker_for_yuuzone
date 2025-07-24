@@ -1,14 +1,16 @@
 FROM libretranslate/libretranslate:latest
 
 # Install dependencies for Japanese and Vietnamese
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    && pip3 install argos-translate \
-    && argospm install translate-ja_en \
-    && argospm install translate-en_ja \
-    && argospm install translate-vi_en \
-    && argospm install translate-en_vi \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-pip && \
+    pip3 install --no-cache-dir argos-translate && \
+    argospm update && \
+    argospm install translate-ja_en && \
+    argospm install translate-en_ja && \
+    argospm install translate-vi_en && \
+    argospm install translate-en_vi && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Expose port for Render
 EXPOSE 5000
