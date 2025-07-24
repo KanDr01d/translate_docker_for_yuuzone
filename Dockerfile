@@ -23,6 +23,7 @@ ENV PATH="/venv/bin:$PATH"
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
+    numpy==1.23.5 \  # Specify a compatible version of numpy
     libretranslate==1.3.12 \
     sentencepiece \
     pybind11 \
@@ -37,7 +38,7 @@ RUN python -m spacy download en_core_web_sm && \
 RUN mkdir -p /app/models && \
     echo "VIETNAMESE_SBD_MODEL=spacy" > /app/models/vietnamese.cfg
 
-# Health check (using 0.0.0.0 instead of localhost)
+# Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
     CMD curl -f http://0.0.0.0:5000/languages || exit 1
 
